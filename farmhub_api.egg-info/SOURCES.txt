@@ -1,0 +1,8 @@
+main.py
+pyproject.toml
+farmhub_api.egg-info/PKG-INFO
+farmhub_api.egg-info/SOURCES.txt
+farmhub_api.egg-info/dependency_links.txt
+farmhub_api.egg-info/entry_points.txt
+farmhub_api.egg-info/requires.txt
+farmhub_api.egg-info/top_level.txt
