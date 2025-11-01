@@ -3,6 +3,7 @@ from sqlmodel import SQLModel, Field
 from typing import Optional
 
 class User(SQLModel, table=True):
+    """Model untuk user aplikasi"""
     __tablename__ = "users"
     
     id: Optional[str] = Field(

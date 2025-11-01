@@ -6,6 +6,7 @@ from app.models.project import Project
 from app.models.ringkasan_awal import RingkasanAwal
 from app.models.analisis_financial import AnalisisFinancial
 from app.models.informasi_teknis import InformasiTeknis
+from app.models.roadmap import Roadmap
 
 import logging
 
