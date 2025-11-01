@@ -7,6 +7,8 @@ from app.models.ringkasan_awal import RingkasanAwal
 from app.models.analisis_financial import AnalisisFinancial
 from app.models.informasi_teknis import InformasiTeknis
 from app.models.roadmap import Roadmap
+from app.models.suplier import Suplier
+from app.models.produk import Produk
 
 import logging
 

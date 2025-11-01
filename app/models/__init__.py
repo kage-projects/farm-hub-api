@@ -4,6 +4,8 @@ from app.models.ringkasan_awal import RingkasanAwal, PotensiPasar
 from app.models.analisis_financial import AnalisisFinancial
 from app.models.informasi_teknis import InformasiTeknis
 from app.models.roadmap import Roadmap
+from app.models.suplier import Suplier
+from app.models.produk import Produk, TipeProduk
 
 __all__ = [
     "User",
@@ -14,5 +16,8 @@ __all__ = [
     "PotensiPasar",
     "AnalisisFinancial",
     "InformasiTeknis",
-    "Roadmap"
+    "Roadmap",
+    "Suplier",
+    "Produk",
+    "TipeProduk"
 ]
