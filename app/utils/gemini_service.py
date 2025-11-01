@@ -57,12 +57,13 @@ def analyze_project_with_gemini(
         skala = "Sangat Besar"
         skala_multiplier = 1.25
     
-    # Faktor resiko
+    # Faktor resiko - handle enum atau string
+    resiko_value = resiko.value if hasattr(resiko, 'value') else str(resiko)
     resiko_multiplier = {
         "KONSERVATIF": 0.95,
         "MODERAT": 1.0,
         "AGRESIF": 1.1
-    }.get(resiko.value, 1.0)
+    }.get(resiko_value, 1.0)
     
     # Faktor lokasi (beberapa kota/kabupaten di Sumbar)
     lokasi_faktor = {
@@ -76,13 +77,14 @@ def analyze_project_with_gemini(
     }
     lokasi_multiplier = lokasi_faktor.get(kabupaten_id.title(), 1.0)
     
-    # Faktor jenis ikan
+    # Faktor jenis ikan - handle enum atau string
+    jenis_ikan_value = jenis_ikan.value if hasattr(jenis_ikan, 'value') else str(jenis_ikan)
     ikan_faktor = {
         "LELE": {"potensi": 1.15, "modal_adj": 1.0, "roi_months": 10},
         "NILA": {"potensi": 1.05, "modal_adj": 1.1, "roi_months": 14},
         "GURAME": {"potensi": 0.95, "modal_adj": 1.2, "roi_months": 16}
     }
-    ikan_data = ikan_faktor.get(jenis_ikan.value, {"potensi": 1.0, "modal_adj": 1.0, "roi_months": 12})
+    ikan_data = ikan_faktor.get(jenis_ikan_value, {"potensi": 1.0, "modal_adj": 1.0, "roi_months": 12})
     
     # Faktor team
     team_factor = 1.0 if jumlah_team == 1 else 1.05
@@ -110,7 +112,7 @@ def analyze_project_with_gemini(
     score_lokasi = lokasi_multiplier * 10
     score_ikan = ikan_data["potensi"] * 10
     score_team = team_factor * 5
-    score_resiko = {"KONSERVATIF": 10, "MODERAT": 8, "AGRESIF": 5}.get(resiko.value, 5)
+    score_resiko = {"KONSERVATIF": 10, "MODERAT": 8, "AGRESIF": 5}.get(resiko_value, 5)
     
     calculated_score = base_score + score_modal + score_lokasi + score_ikan + score_team + score_resiko
     final_score = min(95, max(40, int(calculated_score)))
@@ -129,17 +131,17 @@ Anda adalah ahli analisis bisnis budidaya ikan profesional di Sumatera Barat den
 
 **Informasi Project:**
 - Nama Project: {project_name}
-- Jenis Ikan: {jenis_ikan.value}
+- Jenis Ikan: {jenis_ikan_value}
 - Jumlah Team: {jumlah_team} ({'Solo (dikelola sendiri)' if jumlah_team == 1 else f'Team ({jumlah_team} orang)'})
 - Modal Awal: Rp {modal:,} (skala {skala.lower()})
 - Lokasi: {kabupaten_id}, Sumatera Barat
-- Resiko: {resiko.value}
+- Resiko: {resiko_value}
 
 **Analisis Faktor Spesifik:**
 
-1. **Jenis Ikan {jenis_ikan.value}:**
-   - PERTIMBANGKAN: Karakteristik budidaya {jenis_ikan.value}, waktu panen, harga jual pasar di Sumatera Barat
-   - {jenis_ikan.value} di Sumatera Barat memiliki {'permintaan tinggi' if jenis_ikan.value == 'LELE' else 'permintaan sedang' if jenis_ikan.value == 'NILA' else 'permintaan khusus'} dari pasar lokal
+1. **Jenis Ikan {jenis_ikan_value}:**
+   - PERTIMBANGKAN: Karakteristik budidaya {jenis_ikan_value}, waktu panen, harga jual pasar di Sumatera Barat
+   - {jenis_ikan_value} di Sumatera Barat memiliki {'permintaan tinggi' if jenis_ikan_value == 'LELE' else 'permintaan sedang' if jenis_ikan_value == 'NILA' else 'permintaan khusus'} dari pasar lokal
    - Biaya produksi berbeda untuk setiap jenis ikan
 
 2. **Lokasi {kabupaten_id}:**
@@ -148,16 +150,16 @@ Anda adalah ahli analisis bisnis budidaya ikan profesional di Sumatera Barat den
    - Pertimbangkan biaya operasional spesifik di {kabupaten_id}
 
 3. **Skala Modal Rp {modal:,}:**
-   - HITUNG REALISTIS: Berdasarkan skala {skala.lower()}, jenis ikan {jenis_ikan.value}, dan lokasi {kabupaten_id}
+   - HITUNG REALISTIS: Berdasarkan skala {skala.lower()}, jenis ikan {jenis_ikan_value}, dan lokasi {kabupaten_id}
    - Modal ini {'cukup untuk' if modal >= 50000000 else 'terbatas untuk'} skala operasi yang efisien
-   - Estimasi modal harus mencerminkan biaya aktual di {kabupaten_id} untuk jenis {jenis_ikan.value}
+   - Estimasi modal harus mencerminkan biaya aktual di {kabupaten_id} untuk jenis {jenis_ikan_value}
 
 4. **Tim ({jumlah_team} orang):**
    - {'Dikelola solo memerlukan manajemen yang efisien' if jumlah_team == 1 else f'Tim {jumlah_team} orang memungkinkan pembagian tugas lebih optimal'}
    - Pertimbangkan overhead biaya tenaga kerja
 
-5. **Resiko {resiko.value}:**
-   - {'Resiko rendah dengan strategi konservatif' if resiko.value == 'KONSERVATIF' else 'Resiko sedang yang perlu dikelola' if resiko.value == 'MODERAT' else 'Resiko tinggi dengan potensi return tinggi'}
+5. **Resiko {resiko_value}:**
+   - {'Resiko rendah dengan strategi konservatif' if resiko_value == 'KONSERVATIF' else 'Resiko sedang yang perlu dikelola' if resiko_value == 'MODERAT' else 'Resiko tinggi dengan potensi return tinggi'}
 
 **OUTPUT yang DIPERLUKAN (JSON):**
 
@@ -191,7 +193,7 @@ Berdasarkan analisis DETIL di atas, berikan output JSON dengan:
 
 4. **Potensi Pasar:** Evaluasi REAL berdasarkan kombinasi lokasi + jenis ikan
 
-5. **Kesimpulan:** HARUS SPESIFIK untuk project ini, bukan generic. Sebutkan {kabupaten_id}, {jenis_ikan.value}, skala modal, dan berikan analisis yang UNIK.
+5. **Kesimpulan:** HARUS SPESIFIK untuk project ini, bukan generic. Sebutkan {kabupaten_id}, {jenis_ikan_value}, skala modal, dan berikan analisis yang UNIK.
 
 **CONTOH OUTPUT yang DICARI:**
 - Jika modal kecil + lokasi terpencil: skor 50-60, estimasi modal mungkin 35-45 juta

@@ -1,10 +1,11 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 from app.models.project import JenisIkan, Resiko
 from app.models.ringkasan_awal import PotensiPasar
 
 class ProjectCreate(BaseModel):
     """Schema untuk create project"""
-    project_name: str = Field(..., min_length=3, max_length=200)
+    project_name: Optional[str] = Field(None, min_length=3, max_length=200, description="Nama project (opsional, akan auto-generate jika tidak diisi)")
     jenis_ikan: JenisIkan
     jumlah_team: int = Field(..., ge=1, description="1 = solo, >1 = team")
     modal: int = Field(..., gt=0, description="Modal dalam Rupiah")
@@ -14,7 +15,6 @@ class ProjectCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "project_name": "Budidaya Lele di Padang",
                 "jenis_ikan": "LELE",
                 "jumlah_team": 1,
                 "modal": 50000000,
@@ -49,6 +49,30 @@ class ProjectData(BaseModel):
     kabupaten_id: str
     resiko: str
     user_id: str
+
+class ProjectUpdate(BaseModel):
+    """Schema untuk update project (partial update - semua field optional)"""
+    project_name: Optional[str] = Field(None, min_length=3, max_length=200)
+    jenis_ikan: Optional[JenisIkan] = None
+    jumlah_team: Optional[int] = Field(None, ge=1, description="1 = solo, >1 = team")
+    modal: Optional[int] = Field(None, gt=0, description="Modal dalam Rupiah")
+    kabupaten_id: Optional[str] = None
+    resiko: Optional[Resiko] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "modal": 60000000,
+                "jumlah_team": 2
+            }
+        }
+
+class ProjectUpdateResponse(BaseModel):
+    """Schema untuk response update project"""
+    success: bool
+    message: str
+    data: ProjectData
+    ringkasan_awal: RingkasanAwalData
 
 class ProjectResponse(BaseModel):
     """Schema untuk response create project"""
