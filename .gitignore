@@ -14,7 +14,7 @@ venv/
 ngrok.yml
 env/
 ENV/
-
+app/service/rag/storage
 # IDE
 .vscode/
 .idea/
