@@ -41,9 +41,15 @@ class GeminiClient:
         model, _ = self.get_model()
         return model.generate_content(prompt)
     
+    def generate_content_stream(self, prompt: str):
+        """Generate content dengan streaming menggunakan model Gemini"""
+        model, _ = self.get_model()
+        return model.generate_content(prompt, stream=True)
+    
     @property
     def model_name(self):
         """Mendapatkan nama model yang digunakan"""
         if self.model_used is None:
             self.get_model()
         return self.model_used
+

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 from app.database import get_session
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse
@@ -19,8 +20,42 @@ def create_project(
     db: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-
+    """Create project dengan analisis AI (non-streaming)"""
     return create_project_with_analysis(db, project_data, current_user.id)
+
+@router.post(
+    "/projects/stream",
+    status_code=status.HTTP_200_OK,
+    tags=["projects"]
+)
+async def create_project_stream(
+    project_data: ProjectCreate,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Create project dengan streaming response dari AI analysis
+    
+    Response menggunakan Server-Sent Events (SSE) format.
+    Client dapat menerima chunk-chunk response secara real-time.
+    
+    Format response:
+    - data: {"type": "status", "message": "...", "progress": 10}
+    - data: {"type": "chunk", "text": "...", "progress": 50}
+    - data: {"type": "result", "data": {...}, "progress": 90}
+    - data: {"type": "completed", "success": true, "data": {...}, "ringkasan_awal": {...}, "progress": 100}
+    - data: {"type": "error", "message": "...", "progress": 0}
+    """
+    from app.controllers.project_controller_stream import create_project_with_streaming
+    
+    return StreamingResponse(
+        create_project_with_streaming(db, project_data, current_user.id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 @router.patch(
     "/projects/{project_id}",

@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from app.models.project import Project
 from app.models.ringkasan_awal import RingkasanAwal, PotensiPasar
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, RingkasanAwalDataSimple, AIAnalysisInfo, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse, ProjectListItem
-from app.service.generative import analyze_project_with_gemini
+from app.service.generative.prompt_ringkasan_awal import analyze_project_with_gemini
 
 logger = logging.getLogger(__name__)
 
