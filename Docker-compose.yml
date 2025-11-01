@@ -15,8 +15,7 @@ services:
         condition: service_healthy
     environment:
       - PYTHONUNBUFFERED=1
-    networks:
-      - farmhub-network
+  
 
   db:
     image: postgres:15
@@ -26,7 +25,7 @@ services:
       - POSTGRES_PASSWORD=FarmhubHehe
       - POSTGRES_DB=farmhub
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -35,32 +34,9 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - farmhub-network
+  
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: farmhub-ngrok
-    command:
-      - start
-      - --all
-      - --config
-      - /etc/ngrok/ngrok.yml
-    volumes:
-      - ./ngrok.yml:/etc/ngrok/ngrok.yml
-      - ngrok_data:/etc/ngrok
-    ports:
-      - "4040:4040"  
-    depends_on:
-      - api
-    restart: unless-stopped
-    networks:
-      - farmhub-network
 
 volumes:
   postgres_data:
-  ngrok_data:
 
-networks:
-  farmhub-network:
-    driver: bridge
