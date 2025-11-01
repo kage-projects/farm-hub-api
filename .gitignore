@@ -1,33 +1,46 @@
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 .Python
-env
-pip-log.txt
-pip-delete-this-directory.txt
-.tox
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git
-.mypy_cache
-.pytest_cache
-.hypothesis
+*.egg-info/
+dist/
+build/
+*.egg
 
-.DS_Store
-.vscode
-.idea
-venv
+# Virtual environments
+venv/
+ngrok.yml
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
 *.swp
 *.swo
-*~
 
-# AI Models (jika besar)
-*.bin
-*.safetensors
-models/
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Environment
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+farmhub_api.egg-info/
+
