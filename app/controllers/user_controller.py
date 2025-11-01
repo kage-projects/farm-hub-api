@@ -29,7 +29,6 @@ def register_user(db: Session, user_data: UserRegister) -> RegisterResponse:
                 detail="Email already registered"
             )
         
-        # Validate password length before hashing (bcrypt limit: 72 bytes)
         if len(user_data.password.encode('utf-8')) > 72:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -39,7 +38,7 @@ def register_user(db: Session, user_data: UserRegister) -> RegisterResponse:
         hashed_password = get_password_hash(user_data.password)
         
         user = User(
-            name=user_data.nama, 
+            name=user_data.name, 
             email=user_data.email,
             password=hashed_password
         )
@@ -55,7 +54,7 @@ def register_user(db: Session, user_data: UserRegister) -> RegisterResponse:
             message="success regis",
             data=RegisterData(
                 id=user.id,
-                nama=user.name, 
+                name=user.name, 
                 email=user.email
             )
         )

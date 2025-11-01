@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 
 class UserRegister(BaseModel):
-    nama: str = Field(..., min_length=3, max_length=50)
+    name: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6, max_length=72) 
 
@@ -14,7 +14,7 @@ class LoginData(BaseModel):
 
 class RegisterData(BaseModel):
     id: str
-    nama: str
+    name: str
     email: str
 
 class LoginResponse(BaseModel):

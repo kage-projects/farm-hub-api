@@ -13,6 +13,15 @@ build/
 venv/
 env/
 ENV/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+*.egg-info
+.git
 
 # IDE
 .vscode/

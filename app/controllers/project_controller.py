@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from app.models.project import Project
 from app.models.ringkasan_awal import RingkasanAwal, PotensiPasar
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, AIAnalysisInfo
-from app.utils.gemini_service import analyze_project_with_gemini
+from app.service.generative import analyze_project_with_gemini
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +13,8 @@ def create_project_with_analysis(
     project_data: ProjectCreate,
     user_id: str
 ) -> ProjectResponse:
-    """
-    Create project dan lakukan analisis dengan Gemini AI
-    """
+
     try:
-        # 1. Analisis project dengan Gemini API
         logger.info(f"🔍 Memulai analisis project: {project_data.project_name}")
         analysis_result = analyze_project_with_gemini(
             project_name=project_data.project_name,
@@ -28,7 +25,6 @@ def create_project_with_analysis(
             resiko=project_data.resiko
         )
         
-        # 2. Create project di database
         new_project = Project(
             project_name=project_data.project_name,
             user_id=user_id,
@@ -43,9 +39,7 @@ def create_project_with_analysis(
         db.commit()
         db.refresh(new_project)
         
-        logger.info(f"✅ Project created: {new_project.id}")
         
-        # 3. Create ringkasan_awal di database
         new_ringkasan = RingkasanAwal(
             project_id=new_project.id,
             skor_kelayakan=analysis_result["skor_kelayakan"],
@@ -59,16 +53,13 @@ def create_project_with_analysis(
         db.commit()
         db.refresh(new_ringkasan)
         
-        logger.info(f"✅ Ringkasan awal created untuk project: {new_project.id}")
-        
-        # 4. Helper function untuk mendapatkan value dari enum atau string
+    
         def get_enum_value(enum_obj):
             """Helper untuk mendapatkan value dari enum atau string"""
             if hasattr(enum_obj, 'value'):
                 return enum_obj.value
             return str(enum_obj)
         
-        # 5. Prepare response
         project_response_data = ProjectData(
             id=new_project.id,
             project_name=new_project.project_name,
@@ -80,7 +71,6 @@ def create_project_with_analysis(
             user_id=new_project.user_id
         )
         
-        # 6. Prepare AI Analysis Info
         ai_model_used = analysis_result.get("ai_model_used", "unknown")
         ai_success = analysis_result.get("ai_analysis_success", False)
         

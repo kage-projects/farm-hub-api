@@ -6,7 +6,7 @@ from app.controllers.user_controller import register_user, authenticate_user
 
 router = APIRouter()
 
-@router.post("/registrasi", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 def registrasi(user_data: UserRegister, db: Session = Depends(get_session)):
     return register_user(db, user_data) 
 

@@ -13,10 +13,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
     environment:
       - PYTHONUNBUFFERED=1
+    networks:
+      - farmhub-network
   
 
   db:
@@ -36,7 +36,27 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - farmhub-network
   
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: farmhub-ngrok
+    command:
+      - start
+      - --all
+      - --config
+      - /etc/ngrok/ngrok.yml
+    volumes:
+      - ./ngrok.yml:/etc/ngrok/ngrok.yml
+      - ngrok_data:/etc/ngrok
+    ports:
+      - "4040:4040"  
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - farmhub-network
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -57,27 +77,12 @@ services:
     networks:
       - farmhub-network
 
-  ngrok:
-    image: ngrok/ngrok:latest
-    container_name: farmhub-ngrok
-    command:
-      - start
-      - --all
-      - --config
-      - /etc/ngrok/ngrok.yml
-    volumes:
-      - ./ngrok.yml:/etc/ngrok/ngrok.yml
-      - ngrok_data:/etc/ngrok
-    ports:
-      - "4040:4040"  
-    depends_on:
-      - api
-    restart: unless-stopped
-    networks:
-      - farmhub-network
 
 volumes:
   postgres_data:
   ngrok_data:
   qdrant_data:
 
+networks:
+  farmhub-network:
+    driver: bridge
