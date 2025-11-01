@@ -17,8 +17,7 @@ services:
         condition: service_healthy
     environment:
       - PYTHONUNBUFFERED=1
-    networks:
-      - farmhub-network
+  
 
   db:
     image: postgres:15
@@ -28,7 +27,7 @@ services:
       - POSTGRES_PASSWORD=FarmhubHehe
       - POSTGRES_DB=farmhub
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -37,8 +36,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    networks:
-      - farmhub-network
+  
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -83,6 +81,3 @@ volumes:
   ngrok_data:
   qdrant_data:
 
-networks:
-  farmhub-network:
-    driver: bridge
