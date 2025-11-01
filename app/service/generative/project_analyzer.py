@@ -33,12 +33,10 @@ class ProjectAnalyzer:
         berasal 100% dari AI response, tidak ada perhitungan manual.
         """
         
-        # Ambil konteks HANYA untuk membantu AI memahami context (TIDAK untuk generate hasil)
         skala, _ = self.context_helper.get_scale_info(modal)
         lokasi_multiplier = self.context_helper.get_location_context(kabupaten_id)
         ikan_data = self.context_helper.get_fish_context(jenis_ikan)
         
-        # Build prompt dengan konteks HANYA untuk membantu AI memahami context (TIDAK untuk generate hasil)
         prompt = self.prompt_builder.build_analysis_prompt(
             project_name, jenis_ikan, modal, 
             kabupaten_id, resiko, skala, lokasi_multiplier, ikan_data,
@@ -47,7 +45,6 @@ class ProjectAnalyzer:
         
         logger.info(f"🔍 Mengirim request ke Gemini API untuk analisis project: {project_name}")
         
-        # Generate response dari AI
         try:
             response = self.client.generate_content(prompt)
         except Exception as api_err:

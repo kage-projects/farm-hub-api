@@ -102,3 +102,16 @@ class ProjectDetailResponse(BaseModel):
     data: ProjectData
     ringkasan_awal: RingkasanAwalDataSimple
 
+class ProjectListItem(BaseModel):
+    """Schema untuk item dalam list project (simplified)"""
+    id: str
+    project_name: str
+    kabupaten_id: str
+    resiko: str
+
+class ProjectListResponse(BaseModel):
+    """Schema untuk response GET list projects"""
+    success: bool
+    message: str
+    data: list[ProjectListItem]
+

@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status
 from app.models.project import Project
 from app.models.ringkasan_awal import RingkasanAwal, PotensiPasar
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, RingkasanAwalDataSimple, AIAnalysisInfo, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, RingkasanAwalDataSimple, AIAnalysisInfo, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse, ProjectListItem
 from app.service.generative import analyze_project_with_gemini
 
 logger = logging.getLogger(__name__)
@@ -422,5 +422,53 @@ def get_project_by_id(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Gagal mengambil project: {str(e)}"
+        )
+
+def get_projects(
+    db: Session,
+    user_id: str
+) -> ProjectListResponse:
+    """
+    Get list semua project milik user
+    """
+    try:
+        # 1. Query semua project milik user
+        projects = db.exec(
+            select(Project).where(Project.user_id == user_id)
+        ).all()
+        
+        # 2. Helper function untuk mendapatkan value dari enum atau string
+        def get_enum_value(enum_obj):
+            """Helper untuk mendapatkan value dari enum atau string"""
+            if enum_obj is None:
+                return None
+            if isinstance(enum_obj, str):
+                return enum_obj
+            if hasattr(enum_obj, 'value'):
+                return enum_obj.value
+            return str(enum_obj)
+        
+        # 3. Convert ke ProjectListItem
+        project_list = [
+            ProjectListItem(
+                id=project.id,
+                project_name=project.project_name,
+                kabupaten_id=project.kabupaten_id,
+                resiko=get_enum_value(project.resiko)
+            )
+            for project in projects
+        ]
+        
+        return ProjectListResponse(
+            success=True,
+            message=f"Berhasil mengambil {len(project_list)} project",
+            data=project_list
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting projects list: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gagal mengambil list project: {str(e)}"
         )
 
