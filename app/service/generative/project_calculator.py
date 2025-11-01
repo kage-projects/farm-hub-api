@@ -51,25 +51,6 @@ class ProjectCalculator:
         return ikan_faktor.get(jenis_ikan.value, {"potensi": 1.0, "modal_adj": 1.0, "roi_months": 12})
     
     @staticmethod
-    def get_team_factor(jumlah_team: int) -> float:
-        """Mendapatkan faktor team"""
-        return 1.0 if jumlah_team == 1 else 1.05
-    
-    @staticmethod
-    def calculate_estimated_modal(
-        modal: int,
-        skala_multiplier: float,
-        ikan_modal_adj: float,
-        resiko_multiplier: float,
-        lokasi_multiplier: float
-    ) -> int:
-        """Menghitung estimasi modal realistis dengan variasi"""
-        base_modal = modal
-        adjusted_modal = int(base_modal * skala_multiplier * ikan_modal_adj * resiko_multiplier * lokasi_multiplier)
-        variation = random.uniform(0.95, 1.05)
-        return int(adjusted_modal * variation)
-    
-    @staticmethod
     def calculate_estimated_roi(skala: str, base_roi: int) -> int:
         """Menghitung estimasi ROI berdasarkan jenis ikan dan skala"""
         if skala == "Kecil":
@@ -85,7 +66,6 @@ class ProjectCalculator:
         modal: int,
         lokasi_multiplier: float,
         ikan_potensi: float,
-        team_factor: float,
         resiko: Resiko
     ) -> int:
         """Menghitung skor kelayakan"""
@@ -93,10 +73,9 @@ class ProjectCalculator:
         score_modal = min(20, (modal / 100000000) * 20) if modal > 0 else 10
         score_lokasi = lokasi_multiplier * 10
         score_ikan = ikan_potensi * 10
-        score_team = team_factor * 5
         score_resiko = {"KONSERVATIF": 10, "MODERAT": 8, "AGRESIF": 5}.get(resiko.value, 5)
         
-        calculated_score = base_score + score_modal + score_lokasi + score_ikan + score_team + score_resiko
+        calculated_score = base_score + score_modal + score_lokasi + score_ikan + score_resiko
         return min(95, max(40, int(calculated_score)))
     
     @staticmethod

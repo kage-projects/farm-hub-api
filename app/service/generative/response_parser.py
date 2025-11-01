@@ -97,7 +97,7 @@ class ResponseParser:
         """
         
         # Validasi bahwa semua field yang diperlukan ada dari AI
-        required_fields = ["skor_kelayakan", "potensi_pasar", "estimasi_modal", "estimasi_balik_modal", "kesimpulan_ringkasan"]
+        required_fields = ["skor_kelayakan", "potensi_pasar", "estimasi_balik_modal", "kesimpulan_ringkasan"]
         missing_fields = [field for field in required_fields if field not in analysis_data or analysis_data[field] is None]
         
         if missing_fields:
@@ -117,18 +117,6 @@ class ResponseParser:
         skor_kelayakan = int(skor_kelayakan)
         if not (40 <= skor_kelayakan <= 95):
             logger.warning(f"⚠️ Skor kelayakan dari AI di luar range normal (40-95): {skor_kelayakan}. Tetap digunakan.")
-        
-        # Validasi estimasi modal
-        estimasi_modal = analysis_data["estimasi_modal"]
-        if not isinstance(estimasi_modal, (int, float)):
-            try:
-                estimasi_modal = int(float(str(estimasi_modal).strip().replace(',', '').replace('.', '')))
-            except (ValueError, TypeError):
-                raise ValueError(f"Estimasi modal dari AI tidak valid: {estimasi_modal}")
-        
-        estimasi_modal = int(estimasi_modal)
-        if estimasi_modal <= 0:
-            raise ValueError(f"Estimasi modal dari AI harus positif: {estimasi_modal}")
         
         # Validasi estimasi balik modal
         estimasi_balik_modal = analysis_data["estimasi_balik_modal"]
@@ -158,7 +146,6 @@ class ResponseParser:
         return {
             "skor_kelayakan": skor_kelayakan,  # Dari AI
             "potensi_pasar": potensi_pasar,  # Dari AI
-            "estimasi_modal": estimasi_modal,  # Dari AI
             "estimasi_balik_modal": estimasi_balik_modal,  # Dari AI
             "kesimpulan_ringkasan": kesimpulan_ringkasan  # Dari AI
         }

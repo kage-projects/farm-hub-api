@@ -33,7 +33,6 @@ class Project(SQLModel, table=True):
     jenis_ikan: JenisIkan = Field(
         sa_column=Column(String)
     )
-    jumlahTeam : int
     modal: int
     resiko: Resiko = Field(
         sa_column=Column(String)

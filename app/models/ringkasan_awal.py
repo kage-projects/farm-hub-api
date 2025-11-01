@@ -26,7 +26,6 @@ class RingkasanAwal(SQLModel, table=True):
     potensi_pasar: PotensiPasar = Field(
         sa_column=Column(String)
     )
-    estimasi_modal: int
     estimasi_balik_modal: int
     kesimpulan_ringkasan: str
 

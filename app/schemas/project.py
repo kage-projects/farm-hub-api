@@ -36,7 +36,6 @@ class RingkasanAwalData(BaseModel):
     """Schema untuk data ringkasan awal"""
     skor_kelayakan: int
     potensi_pasar: str  
-    estimasi_modal: int
     estimasi_balik_modal: int
     kesimpulan_ringkasan: str
     ai_analysis: AIAnalysisInfo = Field(..., description="Informasi analisis AI")
@@ -46,7 +45,6 @@ class ProjectData(BaseModel):
     id: str
     project_name: str
     jenis_ikan: str
-    jumlah_team: int
     modal: int
     kabupaten_id: str
     resiko: str
@@ -84,7 +82,6 @@ class RingkasanAwalDataSimple(BaseModel):
     """Schema untuk data ringkasan awal (tanpa ai_analysis) - untuk GET project"""
     skor_kelayakan: int
     potensi_pasar: str  
-    estimasi_modal: int
     estimasi_balik_modal: int
     kesimpulan_ringkasan: str
 

@@ -37,7 +37,6 @@ def create_project_with_analysis(
             user_id=user_id,
             kabupaten_id=project_data.kabupaten_id,
             jenis_ikan=project_data.jenis_ikan,
-            jumlahTeam=1,  # Default ke 1 (solo) karena jumlah_team tidak lagi di request
             modal=project_data.modal,
             resiko=project_data.resiko,
             lang=project_data.lang,
@@ -53,7 +52,6 @@ def create_project_with_analysis(
             project_id=new_project.id,
             skor_kelayakan=analysis_result["skor_kelayakan"],
             potensi_pasar=PotensiPasar(analysis_result["potensi_pasar"]),
-            estimasi_modal=analysis_result["estimasi_modal"],
             estimasi_balik_modal=analysis_result["estimasi_balik_modal"],
             kesimpulan_ringkasan=analysis_result["kesimpulan_ringkasan"]
         )
@@ -73,7 +71,6 @@ def create_project_with_analysis(
             id=new_project.id,
             project_name=new_project.project_name,
             jenis_ikan=get_enum_value(new_project.jenis_ikan),
-            jumlah_team=new_project.jumlahTeam,
             modal=new_project.modal,
             kabupaten_id=new_project.kabupaten_id,
             resiko=get_enum_value(new_project.resiko),
@@ -95,7 +92,6 @@ def create_project_with_analysis(
         ringkasan_response_data = RingkasanAwalData(
             skor_kelayakan=new_ringkasan.skor_kelayakan,
             potensi_pasar=get_enum_value(new_ringkasan.potensi_pasar),
-            estimasi_modal=new_ringkasan.estimasi_modal,
             estimasi_balik_modal=new_ringkasan.estimasi_balik_modal,
             kesimpulan_ringkasan=new_ringkasan.kesimpulan_ringkasan,
             ai_analysis=ai_analysis_info
@@ -242,7 +238,6 @@ def update_project_partial(
             # Update ringkasan_awal yang sudah ada
             existing_ringkasan.skor_kelayakan = analysis_result["skor_kelayakan"]
             existing_ringkasan.potensi_pasar = PotensiPasar(analysis_result["potensi_pasar"])
-            existing_ringkasan.estimasi_modal = analysis_result["estimasi_modal"]
             existing_ringkasan.estimasi_balik_modal = analysis_result["estimasi_balik_modal"]
             existing_ringkasan.kesimpulan_ringkasan = analysis_result["kesimpulan_ringkasan"]
             db.add(existing_ringkasan)
@@ -254,7 +249,6 @@ def update_project_partial(
                 project_id=project.id,
                 skor_kelayakan=analysis_result["skor_kelayakan"],
                 potensi_pasar=PotensiPasar(analysis_result["potensi_pasar"]),
-                estimasi_modal=analysis_result["estimasi_modal"],
                 estimasi_balik_modal=analysis_result["estimasi_balik_modal"],
                 kesimpulan_ringkasan=analysis_result["kesimpulan_ringkasan"]
             )
@@ -284,7 +278,6 @@ def update_project_partial(
             id=project.id,
             project_name=project.project_name,
             jenis_ikan=get_enum_value(project.jenis_ikan),
-            jumlah_team=project.jumlahTeam,
             modal=project.modal,
             kabupaten_id=project.kabupaten_id,
             resiko=get_enum_value(project.resiko),
@@ -310,7 +303,6 @@ def update_project_partial(
         ringkasan_response_data = RingkasanAwalData(
             skor_kelayakan=ringkasan.skor_kelayakan,
             potensi_pasar=get_enum_value(ringkasan.potensi_pasar),
-            estimasi_modal=ringkasan.estimasi_modal,
             estimasi_balik_modal=ringkasan.estimasi_balik_modal,
             kesimpulan_ringkasan=ringkasan.kesimpulan_ringkasan,
             ai_analysis=ai_analysis_info
@@ -391,7 +383,6 @@ def get_project_by_id(
             id=project.id,
             project_name=project.project_name,
             jenis_ikan=get_enum_value(project.jenis_ikan),
-            jumlah_team=project.jumlahTeam,
             modal=project.modal,
             kabupaten_id=project.kabupaten_id,
             resiko=get_enum_value(project.resiko),
@@ -403,7 +394,6 @@ def get_project_by_id(
         ringkasan_response_data = RingkasanAwalDataSimple(
             skor_kelayakan=ringkasan.skor_kelayakan,
             potensi_pasar=get_enum_value(ringkasan.potensi_pasar),
-            estimasi_modal=ringkasan.estimasi_modal,
             estimasi_balik_modal=ringkasan.estimasi_balik_modal,
             kesimpulan_ringkasan=ringkasan.kesimpulan_ringkasan
         )

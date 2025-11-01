@@ -29,7 +29,7 @@ class ProjectAnalyzer:
     ) -> Dict[str, Any]:
         """Menganalisis project menggunakan AI - FULL AI RESPONSE, tidak ada generate manual
         
-        Semua hasil (skor_kelayakan, potensi_pasar, estimasi_modal, estimasi_balik_modal, kesimpulan_ringkasan)
+        Semua hasil (skor_kelayakan, potensi_pasar, estimasi_balik_modal, kesimpulan_ringkasan)
         berasal 100% dari AI response, tidak ada perhitungan manual.
         """
         
@@ -62,7 +62,6 @@ class ProjectAnalyzer:
         model_used = self.client.model_name
         
         logger.info(f"✅ Analisis AI berhasil: Skor {normalized_data['skor_kelayakan']}/100, "
-                   f"Modal: {normalized_data['estimasi_modal']:,}, "
                    f"ROI: {normalized_data['estimasi_balik_modal']} bulan, "
                    f"Model: {model_used}")
         
@@ -71,7 +70,6 @@ class ProjectAnalyzer:
         return {
             "skor_kelayakan": normalized_data["skor_kelayakan"],  # 100% dari AI
             "potensi_pasar": normalized_data["potensi_pasar"],  # 100% dari AI
-            "estimasi_modal": normalized_data["estimasi_modal"],  # 100% dari AI
             "estimasi_balik_modal": normalized_data["estimasi_balik_modal"],  # 100% dari AI
             "kesimpulan_ringkasan": normalized_data["kesimpulan_ringkasan"],  # 100% dari AI
             "ai_model_used": model_used,

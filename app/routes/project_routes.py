@@ -38,7 +38,7 @@ def update_project(
     return update_project_partial(db, project_id, update_data, current_user.id)
 
 @router.get(
-    "/project",
+    "/projects",
     response_model=ProjectListResponse,
     status_code=status.HTTP_200_OK,
     tags=["projects"]
