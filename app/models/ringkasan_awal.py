@@ -11,6 +11,8 @@ class PotensiPasar(str, Enum):
 
 class RingkasanAwal(SQLModel, table=True):
     """Model untuk ringkasan awal project - One to One dengan Project"""
+    __tablename__ = "ringkasan_awal"
+    
     id: Optional[str] = Field(
         default_factory=lambda: str(uuid.uuid4()),
         primary_key=True
@@ -27,7 +29,4 @@ class RingkasanAwal(SQLModel, table=True):
     estimasi_modal: int
     estimasi_balik_modal: int
     kesimpulan_ringkasan: str
-
-    class Config:
-        table_name = "ringkasan_awal"
 

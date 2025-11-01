@@ -1,10 +1,12 @@
 import uuid
-from sqlmodel import SQLModel, Field
-from typing import Optional, Dict, Any
+from sqlmodel import SQLModel, Field, Column
+from typing import Optional, Any
 from sqlalchemy import JSON
 
 class InformasiTeknis(SQLModel, table=True):
     """Model untuk informasi teknis project - One to One dengan Project"""
+    __tablename__ = "informasi_teknis"
+    
     id: Optional[str] = Field(
         default_factory=lambda: str(uuid.uuid4()),
         primary_key=True
@@ -14,31 +16,28 @@ class InformasiTeknis(SQLModel, table=True):
         unique=True, 
         index=True
     )
-    spesifikasi_kolam: Optional[Dict[str, Any]] = Field(
+    spesifikasi_kolam: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-    kualitas_air: Optional[Dict[str, Any]] = Field(
+    kualitas_air: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-    spesifikasi_benih: Optional[Dict[str, Any]] = Field(
+    spesifikasi_benih: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-    spesifikasi_pakan: Optional[Dict[str, Any]] = Field(
+    spesifikasi_pakan: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-    manajemen_kesehatan: Optional[Dict[str, Any]] = Field(
+    manajemen_kesehatan: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-    teknologi_pendukung: Optional[Dict[str, Any]] = Field(
+    teknologi_pendukung: Optional[Any] = Field(
         default=None,
-        sa_column=JSON
+        sa_column=Column(JSON)
     )
-
-    class Config:
-        table_name = "informasi_teknis"
 
