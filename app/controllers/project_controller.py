@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status
 from app.models.project import Project
 from app.models.ringkasan_awal import RingkasanAwal, PotensiPasar
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, AIAnalysisInfo
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectData, RingkasanAwalData, RingkasanAwalDataSimple, AIAnalysisInfo, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse
 from app.service.generative import analyze_project_with_gemini
 
 logger = logging.getLogger(__name__)
@@ -15,24 +15,33 @@ def create_project_with_analysis(
 ) -> ProjectResponse:
 
     try:
-        logger.info(f"🔍 Memulai analisis project: {project_data.project_name}")
+        # Generate project name jika tidak diisi
+        project_name = project_data.project_name
+        if not project_name:
+            # Auto-generate project name jika tidak diisi
+            project_name = f"Project {project_data.jenis_ikan.value} - {project_data.kabupaten_id}"
+        
+        logger.info(f"🔍 Memulai analisis project: {project_name}")
         analysis_result = analyze_project_with_gemini(
-            project_name=generated_name,
+            project_name=project_name,
             jenis_ikan=project_data.jenis_ikan,
-            jumlah_team=project_data.jumlah_team,
             modal=project_data.modal,
             kabupaten_id=project_data.kabupaten_id,
-            resiko=project_data.resiko
+            resiko=project_data.resiko,
+            lang=project_data.lang,
+            lat=project_data.lat
         )
         
         new_project = Project(
-            project_name=generated_name,
+            project_name=project_name,
             user_id=user_id,
             kabupaten_id=project_data.kabupaten_id,
             jenis_ikan=project_data.jenis_ikan,
-            jumlahTeam=project_data.jumlah_team,
+            jumlahTeam=1,  # Default ke 1 (solo) karena jumlah_team tidak lagi di request
             modal=project_data.modal,
-            resiko=project_data.resiko
+            resiko=project_data.resiko,
+            lang=project_data.lang,
+            lat=project_data.lat
         )
         
         db.add(new_project)
@@ -68,7 +77,9 @@ def create_project_with_analysis(
             modal=new_project.modal,
             kabupaten_id=new_project.kabupaten_id,
             resiko=get_enum_value(new_project.resiko),
-            user_id=new_project.user_id
+            user_id=new_project.user_id,
+            lang=new_project.lang,
+            lat=new_project.lat
         )
         
         ai_model_used = analysis_result.get("ai_model_used", "unknown")
@@ -153,10 +164,6 @@ def update_project_partial(
                 project.jenis_ikan = update_data.jenis_ikan
             updated_fields.append("jenis_ikan")
         
-        if update_data.jumlah_team is not None:
-            project.jumlahTeam = update_data.jumlah_team
-            updated_fields.append("jumlah_team")
-        
         if update_data.modal is not None:
             project.modal = update_data.modal
             updated_fields.append("modal")
@@ -173,6 +180,14 @@ def update_project_partial(
             else:
                 project.resiko = update_data.resiko
             updated_fields.append("resiko")
+        
+        if update_data.lang is not None:
+            project.lang = update_data.lang
+            updated_fields.append("lang")
+        
+        if update_data.lat is not None:
+            project.lat = update_data.lat
+            updated_fields.append("lat")
         
         # 3. Jika tidak ada field yang diupdate
         if not updated_fields:
@@ -210,16 +225,18 @@ def update_project_partial(
         analysis_result = analyze_project_with_gemini(
             project_name=project.project_name,
             jenis_ikan=jenis_ikan_enum,
-            jumlah_team=project.jumlahTeam,
             modal=project.modal,
             kabupaten_id=project.kabupaten_id,
-            resiko=resiko_enum
+            resiko=resiko_enum,
+            lang=project.lang,
+            lat=project.lat
         )
         
         # 6. Update atau create ringkasan_awal dengan hasil analisis baru
         # Cari ringkasan_awal berdasarkan project_id (bukan primary key)
-        statement_ringkasan = select(RingkasanAwal).where(RingkasanAwal.project_id == project_id)
-        existing_ringkasan = db.exec(statement_ringkasan).first()
+        existing_ringkasan = db.exec(
+            select(RingkasanAwal).where(RingkasanAwal.project_id == project.id)
+        ).first()
         
         if existing_ringkasan:
             # Update ringkasan_awal yang sudah ada
@@ -271,7 +288,9 @@ def update_project_partial(
             modal=project.modal,
             kabupaten_id=project.kabupaten_id,
             resiko=get_enum_value(project.resiko),
-            user_id=project.user_id
+            user_id=project.user_id,
+            lang=project.lang,
+            lat=project.lat
         )
         
         # 9. Prepare AI Analysis Info
@@ -320,5 +339,88 @@ def update_project_partial(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Gagal mengupdate project: {str(e)}"
+        )
+
+def get_project_by_id(
+    db: Session,
+    project_id: str,
+    user_id: str
+) -> ProjectDetailResponse:
+    """
+    Get project detail berdasarkan ID
+    """
+    try:
+        # 1. Cari project berdasarkan ID dan pastikan milik user
+        project = db.get(Project, project_id)
+        if not project:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Project tidak ditemukan"
+            )
+        
+        if project.user_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Anda tidak memiliki akses untuk melihat project ini"
+            )
+        
+        # 2. Cari ringkasan_awal berdasarkan project_id
+        ringkasan = db.exec(
+            select(RingkasanAwal).where(RingkasanAwal.project_id == project.id)
+        ).first()
+        
+        if not ringkasan:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Ringkasan awal project tidak ditemukan"
+            )
+        
+        # 3. Helper function untuk mendapatkan value dari enum atau string
+        def get_enum_value(enum_obj):
+            """Helper untuk mendapatkan value dari enum atau string"""
+            if enum_obj is None:
+                return None
+            if isinstance(enum_obj, str):
+                return enum_obj
+            if hasattr(enum_obj, 'value'):
+                return enum_obj.value
+            return str(enum_obj)
+        
+        # 4. Prepare response
+        project_response_data = ProjectData(
+            id=project.id,
+            project_name=project.project_name,
+            jenis_ikan=get_enum_value(project.jenis_ikan),
+            jumlah_team=project.jumlahTeam,
+            modal=project.modal,
+            kabupaten_id=project.kabupaten_id,
+            resiko=get_enum_value(project.resiko),
+            user_id=project.user_id,
+            lang=project.lang,
+            lat=project.lat
+        )
+        
+        ringkasan_response_data = RingkasanAwalDataSimple(
+            skor_kelayakan=ringkasan.skor_kelayakan,
+            potensi_pasar=get_enum_value(ringkasan.potensi_pasar),
+            estimasi_modal=ringkasan.estimasi_modal,
+            estimasi_balik_modal=ringkasan.estimasi_balik_modal,
+            kesimpulan_ringkasan=ringkasan.kesimpulan_ringkasan
+        )
+        
+        return ProjectDetailResponse(
+            success=True,
+            message="Project berhasil ditemukan",
+            data=project_response_data,
+            ringkasan_awal=ringkasan_response_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Error getting project: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Gagal mengambil project: {str(e)}"
         )
 

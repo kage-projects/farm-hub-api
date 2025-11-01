@@ -21,10 +21,11 @@ class ProjectAnalyzer:
         self,
         project_name: str,
         jenis_ikan: JenisIkan,
-        jumlah_team: int,
         modal: int,
         kabupaten_id: str,
-        resiko: Resiko
+        resiko: Resiko,
+        lang: float = None,
+        lat: float = None
     ) -> Dict[str, Any]:
         """Menganalisis project menggunakan AI - FULL AI RESPONSE, tidak ada generate manual
         
@@ -39,8 +40,9 @@ class ProjectAnalyzer:
         
         # Build prompt dengan konteks HANYA untuk membantu AI memahami context (TIDAK untuk generate hasil)
         prompt = self.prompt_builder.build_analysis_prompt(
-            project_name, jenis_ikan, jumlah_team, modal, 
-            kabupaten_id, resiko, skala, lokasi_multiplier, ikan_data
+            project_name, jenis_ikan, modal, 
+            kabupaten_id, resiko, skala, lokasi_multiplier, ikan_data,
+            lang=lang, lat=lat
         )
         
         logger.info(f"🔍 Mengirim request ke Gemini API untuk analisis project: {project_name}")
@@ -84,14 +86,15 @@ class ProjectAnalyzer:
 def analyze_project_with_gemini(
     project_name: str,
     jenis_ikan: JenisIkan,
-    jumlah_team: int,
     modal: int,
     kabupaten_id: str,
-    resiko: Resiko
+    resiko: Resiko,
+    lang: float = None,
+    lat: float = None
 ) -> Dict[str, Any]:
     """Function wrapper untuk backward compatibility dengan kode lama"""
     analyzer = ProjectAnalyzer()
     return analyzer.analyze_project(
-        project_name, jenis_ikan, jumlah_team, modal, kabupaten_id, resiko
+        project_name, jenis_ikan, modal, kabupaten_id, resiko, lang=lang, lat=lat
     )
 

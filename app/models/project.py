@@ -38,4 +38,6 @@ class Project(SQLModel, table=True):
     resiko: Resiko = Field(
         sa_column=Column(String)
     )
+    lang: Optional[float] = Field(None, description="Longitude/longitude")
+    lat: Optional[float] = Field(None, description="Latitude")
 

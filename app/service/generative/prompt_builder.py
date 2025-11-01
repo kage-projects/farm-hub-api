@@ -7,13 +7,14 @@ class PromptBuilder:
     def build_analysis_prompt(
         project_name: str,
         jenis_ikan: JenisIkan,
-        jumlah_team: int,
         modal: int,
         kabupaten_id: str,
         resiko: Resiko,
         skala: str,
         lokasi_multiplier: float,
-        ikan_data: dict
+        ikan_data: dict,
+        lang: float = None,
+        lat: float = None
     ) -> str:
         """Membangun prompt untuk analisis project"""
         
@@ -36,11 +37,6 @@ class PromptBuilder:
             'AGRESIF': 'Resiko tinggi dengan potensi return tinggi'
         }.get(resiko.value, 'Resiko sedang yang perlu dikelola')
         
-        team_description = (
-            'Dikelola solo memerlukan manajemen yang efisien' if jumlah_team == 1 
-            else f'Tim {jumlah_team} orang memungkinkan pembagian tugas lebih optimal'
-        )
-        
         modal_adequacy = 'cukup untuk' if modal >= 50000000 else 'terbatas untuk'
         
         return f"""
@@ -49,9 +45,8 @@ Anda adalah ahli analisis bisnis budidaya ikan profesional di Sumatera Barat den
 **Informasi Project:**
 - Nama Project: {project_name}
 - Jenis Ikan: {jenis_ikan.value}
-- Jumlah Team: {jumlah_team} ({'Solo (dikelola sendiri)' if jumlah_team == 1 else f'Team ({jumlah_team} orang)'})
 - Modal Awal: Rp {modal:,} (skala {skala.lower()})
-- Lokasi: {kabupaten_id}, Sumatera Barat
+- Lokasi: {kabupaten_id}, Sumatera Barat{f' (Koordinat: {lat}, {lang})' if lang and lat else ''}
 - Resiko: {resiko.value}
 
 **Analisis Faktor Spesifik:**
@@ -71,11 +66,7 @@ Anda adalah ahli analisis bisnis budidaya ikan profesional di Sumatera Barat den
    - Modal ini {modal_adequacy} skala operasi yang efisien
    - Estimasi modal harus mencerminkan biaya aktual di {kabupaten_id} untuk jenis {jenis_ikan.value}
 
-4. **Tim ({jumlah_team} orang):**
-   - {team_description}
-   - Pertimbangkan overhead biaya tenaga kerja
-
-5. **Resiko {resiko.value}:**
+4. **Resiko {resiko.value}:**
    - {risk_description}
 
 **OUTPUT yang DIPERLUKAN (JSON) - WAJIB SEMUA FIELD:**
