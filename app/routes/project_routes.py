@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session
 from app.database import get_session
-from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse
+from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse, AnalyzeResponse, RoadmapStepRequest, RoadmapStepUpdateResponse
 from app.controllers.project_controller import create_project_with_analysis, update_project_partial, get_project_by_id, get_projects
+from app.controllers.analyze_controller import analyze_project_data, get_analyze_data, update_roadmap_step
 from app.middleware.auth_middleware import get_current_user
 from app.models.user import User
 
@@ -33,18 +34,6 @@ async def create_project_stream(
     db: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Create project dengan streaming response dari AI analysis
-    
-    Response menggunakan Server-Sent Events (SSE) format.
-    Client dapat menerima chunk-chunk response secara real-time.
-    
-    Format response:
-    - data: {"type": "status", "message": "...", "progress": 10}
-    - data: {"type": "chunk", "text": "...", "progress": 50}
-    - data: {"type": "result", "data": {...}, "progress": 90}
-    - data: {"type": "completed", "success": true, "data": {...}, "ringkasan_awal": {...}, "progress": 100}
-    - data: {"type": "error", "message": "...", "progress": 0}
-    """
     from app.controllers.project_controller_stream import create_project_with_streaming
     
     return StreamingResponse(
@@ -56,7 +45,6 @@ async def create_project_stream(
             "X-Accel-Buffering": "no"
         }
     )
-
 @router.patch(
     "/projects/{project_id}",
     response_model=ProjectUpdateResponse,
@@ -100,5 +88,74 @@ def get_project(
 ):
  
     return get_project_by_id(db, project_id, current_user.id)
+
+@router.post(
+    "/analyze/{id_ringkasan}",
+    response_model=AnalyzeResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["projects"]
+)
+async def analyze(
+    id_ringkasan: str,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Generate informasi teknis, analisis financial, dan roadmap menggunakan Gemini AI
+    
+    Menggunakan path parameter: POST /api/v1/analyze/{id_ringkasan}
+    """
+    return await analyze_project_data(db, id_ringkasan, current_user.id)
+
+@router.get(
+    "/analyze/{id_ringkasan}",
+    response_model=AnalyzeResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["projects"]
+)
+def get_analyze(
+    id_ringkasan: str,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get informasi teknis, analisis financial, dan roadmap berdasarkan id_ringkasan
+    
+    Menggunakan path parameter: GET /api/v1/analyze/{id_ringkasan}
+    """
+    return get_analyze_data(db, id_ringkasan, current_user.id)
+
+@router.patch(
+    "/analyze/{id_ringkasan}/roadmap/step",
+    response_model=RoadmapStepUpdateResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["projects"]
+)
+async def patch_roadmap_step(
+    id_ringkasan: str,
+    step_request: RoadmapStepRequest,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update roadmap dengan menambahkan sub-step untuk step pertama (step 1) berdasarkan request user
+    
+    User mengirim request/input dalam body, kemudian AI akan generate title dan deskripsi sub-step.
+    System otomatis menambahkan sub-step ke step 1.
+    Jika user mengirim request pertama kali, akan menjadi sub-step 1.1
+    Jika dilakukan lagi, akan menjadi 1.2, 1.3, dst.
+    
+    Contoh:
+    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step dengan body {{"request": "bagaimana cara membersihkan kolam dengan baik"}}
+      → Menambahkan sub-step 1.1 dengan title dan deskripsi yang di-generate AI
+    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step lagi dengan body {{"request": "cara pasang terpal"}}
+      → Menambahkan sub-step 1.2
+    """
+    return await update_roadmap_step(
+        db, 
+        id_ringkasan, 
+        step_request.request,
+        current_user.id
+    )
 
 

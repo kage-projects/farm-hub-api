@@ -112,3 +112,52 @@ class ProjectListResponse(BaseModel):
     message: str
     data: list[ProjectListItem]
 
+from typing import Any, Dict, List, Optional
+
+class InformasiTeknisResponse(BaseModel):
+    """Schema untuk informasi teknis response"""
+    spesifikasiKolam: Dict[str, Any]
+    kualitasAir: Dict[str, Any]
+    spesifikasiBenih: Dict[str, Any]
+    spesifikasiPakan: Dict[str, Any]
+    manajemenKesehatan: Dict[str, Any]
+    teknologiPendukung: Dict[str, Any]
+
+class AnalisisFinancialResponse(BaseModel):
+    """Schema untuk analisis financial response"""
+    rincianModalAwal: Dict[str, Any]
+    biayaOperasional: Dict[str, Any]
+    analisisROI: Dict[str, Any]
+    analisisBEP: Dict[str, Any]
+    proyeksiPendapatan: Dict[str, Any]
+
+class RoadmapStep(BaseModel):
+    """Schema untuk step dalam roadmap"""
+    step: float
+    title: str
+    deskripsi: str
+
+class RoadmapResponse(BaseModel):
+    """Schema untuk roadmap response"""
+    response: Dict[str, Any]
+    request: Optional[str] = None
+    step: float
+    isRequest: bool
+    roadmapId: Optional[str] = None
+
+class AnalyzeResponse(BaseModel):
+    """Schema untuk response endpoint analyze"""
+    success: bool
+    message: str
+    data: Dict[str, Any]
+
+class RoadmapStepRequest(BaseModel):
+    """Schema untuk request update roadmap step"""
+    request: str = Field(..., min_length=5, description="Input/masukkan dari user untuk sub-step")
+
+class RoadmapStepUpdateResponse(BaseModel):
+    """Schema untuk response update roadmap step"""
+    success: bool
+    message: str
+    data: Dict[str, Any]
+
