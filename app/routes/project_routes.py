@@ -4,7 +4,7 @@ from sqlmodel import Session
 from app.database import get_session
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate, ProjectUpdateResponse, ProjectDetailResponse, ProjectListResponse, AnalyzeResponse, RoadmapStepRequest, RoadmapStepUpdateResponse
 from app.controllers.project_controller import create_project_with_analysis, update_project_partial, get_project_by_id, get_projects
-from app.controllers.analyze_controller import analyze_project_data, get_analyze_data, update_roadmap_step
+from app.controllers.analyze_controller import analyze_project_data, get_analyze_data, update_roadmap_step, analyze_project_data_stream
 from app.middleware.auth_middleware import get_current_user
 from app.models.user import User
 
@@ -101,11 +101,43 @@ async def analyze(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Generate informasi teknis, analisis financial, dan roadmap menggunakan Gemini AI
+    Generate informasi teknis, analisis financial, dan roadmap menggunakan Gemini AI (non-streaming)
     
     Menggunakan path parameter: POST /api/v1/analyze/{id_ringkasan}
     """
     return await analyze_project_data(db, id_ringkasan, current_user.id)
+
+@router.post(
+    "/analyze/{id_ringkasan}/stream",
+    status_code=status.HTTP_200_OK,
+    tags=["projects"]
+)
+async def analyze_stream(
+    id_ringkasan: str,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Generate informasi teknis, analisis financial, dan roadmap menggunakan Gemini AI dengan stream response
+    
+    Menggunakan Server-Sent Events (SSE) untuk streaming progress dan hasil secara real-time.
+    Response akan mengirim event dengan format:
+    - event: progress - Update progress dan status
+    - event: partial_complete - Data parsial selesai (informasi_teknis, analisis_financial, roadmap)
+    - event: complete - Semua data selesai dan disimpan
+    - event: error - Error yang terjadi
+    
+    Menggunakan path parameter: POST /api/v1/analyze/{id_ringkasan}/stream
+    """
+    return StreamingResponse(
+        analyze_project_data_stream(db, id_ringkasan, current_user.id),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 @router.get(
     "/analyze/{id_ringkasan}",

@@ -1,6 +1,7 @@
 import logging
 import asyncio
 import copy
+import json
 from concurrent.futures import ThreadPoolExecutor
 from sqlmodel import Session, select
 from fastapi import HTTPException, status
@@ -61,12 +62,10 @@ async def analyze_project_data(
                 detail="Anda tidak memiliki akses untuk menganalisis project ini"
             )
         
-        # 4. Prepare data untuk prompt
         jenis_ikan_str = get_enum_value(project.jenis_ikan)
         resiko_str = get_enum_value(project.resiko)
         potensi_pasar_str = get_enum_value(ringkasan_awal.potensi_pasar)
         
-        # 5. Generate informasi_teknis terlebih dahulu (karena diperlukan untuk analisis_financial dan roadmap)
         logger.info(f"🔍 Memulai generate informasi teknis untuk project: {project.project_name}")
         
         informasi_teknis_result = await asyncio.get_event_loop().run_in_executor(
@@ -593,4 +592,242 @@ async def update_roadmap_step(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Gagal update roadmap step: {str(e)}"
         )
+
+async def analyze_project_data_stream(
+    db: Session,
+    id_ringkasan: str,
+    user_id: str
+):
+    """
+    Generate informasi teknis, analisis financial, dan roadmap dengan stream response
+    Menggunakan parallel processing untuk optimasi kecepatan
+    """
+    try:
+        def send_event(event_type: str, data: dict):
+            """Helper untuk format SSE event"""
+            return f"event: {event_type}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+        
+        # 1. Validasi dan setup
+        yield send_event("progress", {
+            "status": "started",
+            "message": "Memulai analisis project...",
+            "progress": 0
+        })
+        
+        ringkasan_awal = db.get(RingkasanAwal, id_ringkasan)
+        if not ringkasan_awal:
+            yield send_event("error", {
+                "message": "Ringkasan awal tidak ditemukan"
+            })
+            return
+        
+        project = db.get(Project, ringkasan_awal.project_id)
+        if not project:
+            yield send_event("error", {
+                "message": "Project tidak ditemukan"
+            })
+            return
+        
+        if project.user_id != user_id:
+            yield send_event("error", {
+                "message": "Anda tidak memiliki akses untuk menganalisis project ini"
+            })
+            return
+        
+        jenis_ikan_str = get_enum_value(project.jenis_ikan)
+        resiko_str = get_enum_value(project.resiko)
+        potensi_pasar_str = get_enum_value(ringkasan_awal.potensi_pasar)
+        
+        # 2. Prepare common parameters untuk parallel execution
+        common_params = {
+            "project_name": project.project_name,
+            "jenis_ikan": jenis_ikan_str,
+            "modal": project.modal,
+            "kabupaten_id": project.kabupaten_id,
+            "resiko": resiko_str,
+            "skor_kelayakan": ringkasan_awal.skor_kelayakan,
+            "potensi_pasar": potensi_pasar_str,
+            "estimasi_balik_modal": ringkasan_awal.estimasi_balik_modal,
+            "kesimpulan_ringkasan": ringkasan_awal.kesimpulan_ringkasan,
+            "lang": project.lang,
+            "lat": project.lat
+        }
+        
+        # 3. Generate informasi_teknis terlebih dahulu
+        yield send_event("progress", {
+            "status": "processing",
+            "message": "Memulai generate informasi teknis...",
+            "progress": 10
+        })
+        
+        informasi_teknis_result = await asyncio.get_event_loop().run_in_executor(
+            executor,
+            lambda: generate_informasi_teknis_with_gemini(**common_params)
+        )
+        
+        yield send_event("progress", {
+            "status": "partial_complete",
+            "message": "Informasi teknis berhasil di-generate",
+            "progress": 40,
+            "data": {
+                "informasi_teknis": informasi_teknis_result
+            }
+        })
+        
+        # 4. Generate analisis_financial setelah informasi_teknis selesai
+        yield send_event("progress", {
+            "status": "processing",
+            "message": "Memulai generate analisis financial...",
+            "progress": 45
+        })
+        
+        analisis_financial_result = await asyncio.get_event_loop().run_in_executor(
+            executor,
+            lambda: generate_analisis_financial_with_gemini(
+                **common_params,
+                informasi_teknis=informasi_teknis_result
+            )
+        )
+        
+        yield send_event("progress", {
+            "status": "partial_complete",
+            "message": "Analisis financial berhasil di-generate",
+            "progress": 70,
+            "data": {
+                "analisis_financial": analisis_financial_result
+            }
+        })
+        
+        # 5. Generate roadmap setelah informasi_teknis dan analisis_financial selesai
+        yield send_event("progress", {
+            "status": "processing",
+            "message": "Memulai generate roadmap...",
+            "progress": 75
+        })
+        
+        roadmap_result = await asyncio.get_event_loop().run_in_executor(
+            executor,
+            lambda: generate_roadmap_with_gemini(
+                **common_params,
+                informasi_teknis=informasi_teknis_result,
+                analisis_financial=analisis_financial_result
+            )
+        )
+        
+        yield send_event("progress", {
+            "status": "partial_complete",
+            "message": "Roadmap berhasil di-generate",
+            "progress": 90,
+            "data": {
+                "roadmap": roadmap_result
+            }
+        })
+        
+        # 6. Save ke database
+        yield send_event("progress", {
+            "status": "processing",
+            "message": "Menyimpan data ke database...",
+            "progress": 95
+        })
+        
+        # Save informasi_teknis
+        existing_informasi_teknis = db.exec(
+            select(InformasiTeknis).where(InformasiTeknis.project_id == project.id)
+        ).first()
+        
+        if existing_informasi_teknis:
+            existing_informasi_teknis.spesifikasi_kolam = informasi_teknis_result.get("spesifikasiKolam")
+            existing_informasi_teknis.kualitas_air = informasi_teknis_result.get("kualitasAir")
+            existing_informasi_teknis.spesifikasi_benih = informasi_teknis_result.get("spesifikasiBenih")
+            existing_informasi_teknis.spesifikasi_pakan = informasi_teknis_result.get("spesifikasiPakan")
+            existing_informasi_teknis.manajemen_kesehatan = informasi_teknis_result.get("manajemenKesehatan")
+            existing_informasi_teknis.teknologi_pendukung = informasi_teknis_result.get("teknologiPendukung")
+            db.add(existing_informasi_teknis)
+        else:
+            new_informasi_teknis = InformasiTeknis(
+                project_id=project.id,
+                spesifikasi_kolam=informasi_teknis_result.get("spesifikasiKolam"),
+                kualitas_air=informasi_teknis_result.get("kualitasAir"),
+                spesifikasi_benih=informasi_teknis_result.get("spesifikasiBenih"),
+                spesifikasi_pakan=informasi_teknis_result.get("spesifikasiPakan"),
+                manajemen_kesehatan=informasi_teknis_result.get("manajemenKesehatan"),
+                teknologi_pendukung=informasi_teknis_result.get("teknologiPendukung")
+            )
+            db.add(new_informasi_teknis)
+        
+        # Save analisis_financial
+        existing_analisis_financial = db.exec(
+            select(AnalisisFinancial).where(AnalisisFinancial.project_id == project.id)
+        ).first()
+        
+        if existing_analisis_financial:
+            existing_analisis_financial.rincian_modal_awal = analisis_financial_result.get("rincianModalAwal")
+            existing_analisis_financial.biaya_operasional = analisis_financial_result.get("biayaOperasional")
+            existing_analisis_financial.analisis_roi = analisis_financial_result.get("analisisROI")
+            existing_analisis_financial.analisis_bep = analisis_financial_result.get("analisisBEP")
+            existing_analisis_financial.proyeksi_pendapatan = analisis_financial_result.get("proyeksiPendapatan")
+            db.add(existing_analisis_financial)
+        else:
+            new_analisis_financial = AnalisisFinancial(
+                project_id=project.id,
+                rincian_modal_awal=analisis_financial_result.get("rincianModalAwal"),
+                biaya_operasional=analisis_financial_result.get("biayaOperasional"),
+                analisis_roi=analisis_financial_result.get("analisisROI"),
+                analisis_bep=analisis_financial_result.get("analisisBEP"),
+                proyeksi_pendapatan=analisis_financial_result.get("proyeksiPendapatan")
+            )
+            db.add(new_analisis_financial)
+        
+        # Delete dan create roadmap baru
+        existing_roadmaps = db.exec(
+            select(Roadmap).where(Roadmap.project_id == project.id)
+        ).all()
+        
+        for roadmap in existing_roadmaps:
+            db.delete(roadmap)
+        
+        roadmap_step = roadmap_result.get("step", 1.0)
+        if not isinstance(roadmap_step, (int, float)):
+            roadmap_step = 1.0
+        else:
+            roadmap_step = float(roadmap_step)
+        
+        new_roadmap = Roadmap(
+            project_id=project.id,
+            response=roadmap_result.get("response"),
+            request=roadmap_result.get("request"),
+            step=roadmap_step,
+            is_request=roadmap_result.get("isRequest", False),
+            roadmap_id=roadmap_result.get("roadmapId")
+        )
+        db.add(new_roadmap)
+        
+        db.commit()
+        
+        # 7. Final response
+        response_data = {
+            "informasi_teknis": informasi_teknis_result,
+            "analisis_financial": analisis_financial_result,
+            "roadmap": roadmap_result
+        }
+        
+        yield send_event("complete", {
+            "status": "completed",
+            "message": "Semua data berhasil di-generate dan disimpan",
+            "progress": 100,
+            "data": response_data
+        })
+        
+    except HTTPException as e:
+        db.rollback()
+        yield send_event("error", {
+            "message": e.detail,
+            "status_code": e.status_code
+        })
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Error saat generate data dengan stream: {str(e)}", exc_info=True)
+        yield send_event("error", {
+            "message": f"Gagal generate data: {str(e)}"
+        })
 

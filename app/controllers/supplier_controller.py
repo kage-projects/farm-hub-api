@@ -211,7 +211,6 @@ def get_place_details(place_id: str, google_maps_api_key: str = None) -> Optiona
         if not google_maps_api_key:
             raise ValueError("Google Maps API Key tidak ditemukan")
         
-        # Strip whitespace dari API key untuk memastikan tidak ada spasi tersembunyi
         google_maps_api_key = google_maps_api_key.strip()
         
         if not google_maps_api_key:
@@ -233,13 +232,11 @@ def get_place_details(place_id: str, google_maps_api_key: str = None) -> Optiona
             error_text = response.text
             logger.error(f"Error API: {response.status_code} - {error_text}")
             
-            # Parse error response untuk memberikan pesan yang lebih jelas
             try:
                 error_json = response.json()
                 error_detail = error_json.get('error', {})
                 error_message = error_detail.get('message', 'Unknown error')
                 
-                # Cek jika error terkait API key
                 if 'API_KEY' in error_message or 'api key' in error_message.lower():
                     logger.error(f"❌ Masalah dengan API Key: {error_message}")
                     raise ValueError(f"Google Maps API Key tidak valid: {error_message}")
@@ -264,7 +261,6 @@ def extract_phone_number(place_details: Dict) -> str:
         place_details.get('internationalPhoneNumber') or 
         ''
     )
-    # Bersihkan format nomor telepon
     phone = phone.replace(' ', '').replace('-', '').replace('+62', '0').strip()
     return phone
 
@@ -276,16 +272,14 @@ def convert_to_supplier_data(place_details: Dict) -> Dict:
     
     supplier_id = str(uuid.uuid4())
     
-    # Places API New menggunakan displayName bukan name
     nama_toko = place_details.get('displayName', {}).get('text', '') if isinstance(place_details.get('displayName'), dict) else place_details.get('displayName', '')
     
-    # Places API New menggunakan formattedAddress bukan formatted_address
     alamat = place_details.get('formattedAddress', '')
     
     return {
         'id': supplier_id,
-        'lang': str(location.get('longitude', '')),  # longitude
-        'lat': str(location.get('latitude', '')),   # latitude
+        'lang': str(location.get('longitude', '')),  
+        'lat': str(location.get('latitude', '')),  
         'namaToko': nama_toko,
         'rating': int(place_details.get('rating', 0)) if place_details.get('rating') else 0,
         'alamat': alamat,
@@ -395,7 +389,6 @@ def load_penadah_data() -> Dict:
     Load data penadah dari file JSON
     """
     try:
-        # Path ke file penadah.json
         current_dir = Path(__file__).parent
         penadah_file = current_dir.parent / 'data' / 'penadah.json'
         

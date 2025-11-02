@@ -19,9 +19,7 @@ class PromptBuilder:
         lang: float = None,
         lat: float = None
     ) -> str:
-        """Membangun prompt untuk generate analisis financial"""
         
-        # Extract info dari informasi_teknis untuk konsistensi
         kolam_info = informasi_teknis.get("spesifikasiKolam", {})
         benih_info = informasi_teknis.get("spesifikasiBenih", {})
         
