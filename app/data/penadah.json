@@ -1,0 +1,186 @@
+{
+    "count": 20,
+    "data": [
+        {
+            "alamat": "Jl. Kuranji Raya No.88, Kuranji, Kec. Kuranji, Kota Padang, Sumatera Barat 25178",
+            "id": "8f5ae0c1-2a4c-4f01-b11b-2c11a9c230a8",
+            "lang": "100.4088112",
+            "lat": "-0.9002114",
+            "namaToko": "Pengepul Lele Kuranji Mak Budi",
+            "noHp": "082388776541",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Adinegoro No.21, Lubuk Buaya, Kec. Koto Tangah, Kota Padang, Sumatera Barat 25586",
+            "id": "300e5b12-1e0a-4206-9ac0-2d4ae89246d3",
+            "lang": "100.3448128",
+            "lat": "-0.8691151",
+            "namaToko": "Penampung Ikan Lele Bu Adin",
+            "noHp": "081269112213",
+            "rating": 5
+        },
+        {
+            "alamat": "Gg. Srikandi No.3, Dadok Tunggul Hitam, Kec. Koto Tangah, Kota Padang, Sumatera Barat",
+            "id": "23b6e9ea-ef5e-4d26-bd66-7157538dfa88",
+            "lang": "100.3721101",
+            "lat": "-0.8913148",
+            "namaToko": "Gudang Lele Tunggul Hitam",
+            "noHp": "",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Bypass KM 12, Parupuk Tabing, Koto Tangah, Kota Padang, Sumatera Barat",
+            "id": "8a38f703-6761-4c3d-a8cc-7bf46be50ace",
+            "lang": "100.3918175",
+            "lat": "-0.8789041",
+            "namaToko": "CV Mina Laut Indah",
+            "noHp": "085274882990",
+            "rating": 5
+        },
+        {
+            "alamat": "Jl. Koto Pulai No.44, Limau Manis, Kec. Pauh, Kota Padang, Sumatera Barat",
+            "id": "6e583738-a41d-48df-9d63-f613348eaf02",
+            "lang": "100.4489119",
+            "lat": "-0.9562202",
+            "namaToko": "Agen Ikan & Lele Padang Raya",
+            "noHp": "082288731552",
+            "rating": 4
+        },
+        {
+            "alamat": "Komplek Bungo Mas, Batipuh Panjang, Koto Tangah, Kota Padang",
+            "id": "ae561505-6908-4cd1-a352-29264858a1e6",
+            "lang": "100.3357810",
+            "lat": "-0.8191124",
+            "namaToko": "Penampung Lele Pak Anto",
+            "noHp": "081266772113",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Maransi No.77, Aie Pacah, Koto Tangah, Kota Padang, Sumatera Barat",
+            "id": "f7bc6908-2ba3-4403-bf82-8462e9128152",
+            "lang": "100.3742282",
+            "lat": "-0.8865001",
+            "namaToko": "Suplier Hasil Kolam Aie Pacah",
+            "noHp": "089531551282",
+            "rating": 5
+        },
+        {
+            "alamat": "Jl. Jondul Rawang No. 14, Rawang, Padang Selatan, Kota Padang",
+            "id": "e3124e06-e8f2-41d5-963b-1eb478302aa3",
+            "lang": "100.3727809",
+            "lat": "-0.9603821",
+            "namaToko": "Agen Ikan Budi Jaya",
+            "noHp": "(0751)771221",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Padang Indarung No.5, Lubuk Kilangan, Kota Padang",
+            "id": "59f86bb8-2b2f-4591-8f3f-bff1492dc8c1",
+            "lang": "100.4278199",
+            "lat": "-0.9533217",
+            "namaToko": "Pengepul Lele Indarung",
+            "noHp": "081265556777",
+            "rating": 4
+        },
+        {
+            "alamat": "Gg. Serai II, Anduring, Kuranji, Kota Padang",
+            "id": "e7cf904a-4028-476e-a7e7-311878e58797",
+            "lang": "100.4066113",
+            "lat": "-0.8997110",
+            "namaToko": "Penampung Lele & Patin Padang",
+            "noHp": "081277901882",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Ps. Baru No.18, Parak Kopi, Padang Utara, Kota Padang",
+            "id": "0d430fd2-dc89-4ae5-a5b3-bb3920d6e87f",
+            "lang": "100.3705008",
+            "lat": "-0.9349901",
+            "namaToko": "Suplier Ikan Hidup Uni Ana",
+            "noHp": "082285723744",
+            "rating": 5
+        },
+        {
+            "alamat": "Jl. Gajah Mada No.12, Gunung Pangilun, Padang Utara, Kota Padang",
+            "id": "8b6d9f04-233c-4b9b-a401-185a33321a2e",
+            "lang": "100.3658121",
+            "lat": "-0.9341542",
+            "namaToko": "Kios Lele Hidup Gajah Mada",
+            "noHp": "",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Tarantang No.43, Kapalo Koto, Pauh, Kota Padang",
+            "id": "ec2c79d7-141e-4baa-9693-611eb8fdd3af",
+            "lang": "100.4560112",
+            "lat": "-0.9521149",
+            "namaToko": "Pengepul Lele Tarantang Jaya",
+            "noHp": "083187722631",
+            "rating": 5
+        },
+        {
+            "alamat": "Komplek Griya Palma, Dadok Tunggul Hitam, Kota Padang",
+            "id": "4e9e33e5-b1f3-44cf-9fee-bb6c68567301",
+            "lang": "100.3737117",
+            "lat": "-0.8867741",
+            "namaToko": "Agen Lele & Gurame Palma",
+            "noHp": "081267891332",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Sawahan Dalam No.9, Sawahan Timur, Padang Timur",
+            "id": "2fdadc33-27cf-47c3-95f7-916df3dfc477",
+            "lang": "100.3729912",
+            "lat": "-0.9432125",
+            "namaToko": "Penampung Ikan Sawahan",
+            "noHp": "082248115211",
+            "rating": 5
+        },
+        {
+            "alamat": "Jl. Bandar Buat No.104, Lubuk Kilangan, Kota Padang",
+            "id": "e3d51f66-9f48-4af6-b00d-0e958e582244",
+            "lang": "100.4448122",
+            "lat": "-0.9471121",
+            "namaToko": "CV Mina Mandiri Padang",
+            "noHp": "081277112811",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Ampang No.6, Ampang, Kuranji, Kota Padang",
+            "id": "af4deed0-879a-4fa9-91b6-9a86a20ac6e0",
+            "lang": "100.4112110",
+            "lat": "-0.8992151",
+            "namaToko": "Gudang Ikan Hidup Ampang",
+            "noHp": "",
+            "rating": 3
+        },
+        {
+            "alamat": "Kampung Baru, Andalas, Padang Timur",
+            "id": "b7e502a3-d08d-4de6-bce2-fbe6c4ac7a94",
+            "lang": "100.3774102",
+            "lat": "-0.9457719",
+            "namaToko": "Agen Lele Andalas",
+            "noHp": "081363722711",
+            "rating": 5
+        },
+        {
+            "alamat": "Jl. Sungai Sapih No.22, Kuranji, Kota Padang",
+            "id": "935bb639-c36a-40c7-bc92-7e152f5f0107",
+            "lang": "100.4038801",
+            "lat": "-0.9017855",
+            "namaToko": "Penampung Lele Sungai Sapih",
+            "noHp": "085363991271",
+            "rating": 4
+        },
+        {
+            "alamat": "Jl. Bypass KM 10, Koto Panjang, Koto Tangah, Kota Padang",
+            "id": "41e56478-bbb9-4f2c-9a22-4311f3ddaa21",
+            "lang": "100.3868822",
+            "lat": "-0.8852111",
+            "namaToko": "Pusat Ikan Hidup Koto Panjang",
+            "noHp": "081267411911",
+            "rating": 5
+        }
+    ],
+    "success": true
+}

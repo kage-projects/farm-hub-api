@@ -3,6 +3,8 @@ import logging
 import uuid
 import time
 import os
+import json
+from pathlib import Path
 from typing import List, Dict, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
@@ -297,19 +299,7 @@ def fetch_suppliers(
     google_maps_api_key: str = None,
     verbose: bool = True
 ) -> List[Dict]:
-    """
-    Mengambil data supplier ikan berdasarkan parameter
-    
-    Args:
-        tipe_produk: List tipe produk ['pakan', 'bibit']
-        jenis_ikan: List jenis ikan ['lele', 'nila', 'kerapu']
-        kota: List kota di Sumbar
-        google_maps_api_key: Google Maps API Key
-        verbose: Print progress atau tidak
-    
-    Returns:
-        List data supplier
-    """
+
     # Default values
     if not tipe_produk:
         tipe_produk = ['pakan', 'bibit']
@@ -356,7 +346,7 @@ def fetch_suppliers(
         if verbose and len(relevant_places) < len(places):
             logger.info(f"  → Filtered: {len(places)} → {len(relevant_places)} relevan")
         
-        time.sleep(0.2)  # Delay untuk menghindari rate limit (dikurangi dari 1 detik)
+        time.sleep(0.2) 
     
     if verbose:
         logger.info(f"\nDitemukan {len(all_places)} tempat unik")
@@ -400,6 +390,33 @@ def get_kota_sumbar() -> List[str]:
     """
     return KOTA_SUMBAR
 
+def load_penadah_data() -> Dict:
+    """
+    Load data penadah dari file JSON
+    """
+    try:
+        # Path ke file penadah.json
+        current_dir = Path(__file__).parent
+        penadah_file = current_dir.parent / 'data' / 'penadah.json'
+        
+        with open(penadah_file, 'r', encoding='utf-8') as f:
+            penadah_data = json.load(f)
+        
+        logger.info(f"✅ Data penadah berhasil dimuat dari {penadah_file}")
+        return penadah_data
+    except FileNotFoundError:
+        logger.error(f"❌ File penadah.json tidak ditemukan di {penadah_file}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="File data penadah tidak ditemukan"
+        )
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ Error parsing JSON penadah: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error parsing data penadah"
+        )
+
 def scrape_suppliers_controller(
     tipe_produk: List[str] = None,
     jenis_ikan: List[str] = None,
@@ -409,7 +426,7 @@ def scrape_suppliers_controller(
     Controller untuk scraping supplier ikan
     
     Args:
-        tipe_produk: List tipe produk ['pakan', 'bibit']
+        tipe_produk: List tipe produk ['pakan', 'bibit', 'penadah']
         jenis_ikan: List jenis ikan ['lele', 'nila', 'kerapu']
         kota: List kota di Sumbar
     
@@ -444,14 +461,33 @@ def scrape_suppliers_controller(
                 detail="kota tidak boleh kosong"
             )
         
-        # Validasi tipe produk
+        # Normalize tipe_produk ke lowercase
+        tipe_produk_lower = [t.lower() for t in tipe_produk]
+        
+        # Cek jika ada "penadah" di tipe_produk
+        if 'penadah' in tipe_produk_lower:
+            logger.info("📋 Tipe produk 'penadah' terdeteksi, menggunakan data dari penadah.json")
+            penadah_data = load_penadah_data()
+            return penadah_data
+        
+        # Validasi tipe produk (jika bukan penadah)
         valid_tipe = ['pakan', 'bibit']
-        invalid_tipe = [t for t in tipe_produk if t not in valid_tipe]
+        invalid_tipe = [t for t in tipe_produk_lower if t not in valid_tipe]
         if invalid_tipe:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"tipeProduk tidak valid: {invalid_tipe}. Hanya boleh: {valid_tipe}"
+                detail=f"tipeProduk tidak valid: {invalid_tipe}. Hanya boleh: {valid_tipe + ['penadah']}"
             )
+        
+        # Hardcode API key untuk testing
+        google_maps_api_key = "AIzaSyAg29NTRIfDxTLOfenIdX-ezjpEoIgJEoc"
+        
+        # Strip whitespace untuk memastikan tidak ada spasi tersembunyi
+        google_maps_api_key = google_maps_api_key.strip()
+        
+        logger.info(f"✅ Menggunakan hardcoded Google Maps API Key (panjang: {len(google_maps_api_key)} karakter)")
+        masked_key = f"{google_maps_api_key[:4]}...{google_maps_api_key[-4:]}"
+        logger.info(f"🔑 API Key preview: {masked_key}")
         
         # Fetch suppliers dengan API key yang sudah di-strip
         logger.info("🚀 Memulai scraping suppliers...")
