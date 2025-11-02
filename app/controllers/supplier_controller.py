@@ -418,7 +418,7 @@ def scrape_suppliers_controller(
     """
     try:
         # Hardcode API key untuk testing
-        google_maps_api_key = "AIzaSyB8B04MTIk7abJDVESr6SUF6f3Hgt1DPAY"
+        google_maps_api_key = "AIzaSyAg29NTRIfDxTLOfenIdX-ezjpEoIgJEoc"
         
         # Strip whitespace untuk memastikan tidak ada spasi tersembunyi
         google_maps_api_key = google_maps_api_key.strip()
