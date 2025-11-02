@@ -371,17 +371,19 @@ async def update_roadmap_step(
     db: Session,
     id_ringkasan: str,
     user_request: str,
+    step_number: int,
     user_id: str
 ) -> dict:
     """
-    Update roadmap dengan menambahkan sub-step untuk step pertama (step 1) berdasarkan request user
+    Update roadmap dengan menambahkan sub-step untuk step tertentu berdasarkan request user
     
     Args:
         id_ringkasan: ID ringkasan awal
         user_request: Request/input dari user untuk sub-step baru
+        step_number: Nomor step utama yang akan ditambahkan sub-stepnya (1-4)
         user_id: ID user yang melakukan update
     
-    System otomatis menambahkan sub-step ke step 1 (1.1, 1.2, 1.3, dst)
+    System otomatis menambahkan sub-step ke step yang ditentukan (1.1, 1.2, 2.1, 2.2, dst)
     """
     try:
         # 1. Cari ringkasan_awal berdasarkan ID
@@ -418,8 +420,15 @@ async def update_roadmap_step(
                 detail="Roadmap tidak ditemukan. Silakan generate roadmap terlebih dahulu."
             )
         
-        # 5. Otomatis menggunakan step 1 sebagai parent step
-        parent_step_num = 1.0
+        # 5. Gunakan step_number dari request sebagai parent step
+        parent_step_num = float(step_number)
+        
+        # Validasi step_number (1-4)
+        if step_number < 1 or step_number > 4:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Step number harus antara 1-4"
+            )
         
         # 6. Dapatkan list steps dari response - COPY untuk menghindari mutating langsung
         roadmap_response = roadmap.response

@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     apikey_gemini: str
     bcrypt_rounds: int = 12 
     qdrant_url: Optional[str] = None
+    google_maps_api_key: Optional[str] = None
     
     class Config:
         env_file = ".env"

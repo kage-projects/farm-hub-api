@@ -138,23 +138,31 @@ async def patch_roadmap_step(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Update roadmap dengan menambahkan sub-step untuk step pertama (step 1) berdasarkan request user
+    Update roadmap dengan menambahkan sub-step untuk step tertentu berdasarkan request user
     
-    User mengirim request/input dalam body, kemudian AI akan generate title dan deskripsi sub-step.
-    System otomatis menambahkan sub-step ke step 1.
-    Jika user mengirim request pertama kali, akan menjadi sub-step 1.1
-    Jika dilakukan lagi, akan menjadi 1.2, 1.3, dst.
+    User mengirim request/input dalam body dengan step number, kemudian AI akan generate title dan deskripsi sub-step.
+    System otomatis menambahkan sub-step ke step yang ditentukan.
+    Jika user mengirim request untuk step 1 pertama kali, akan menjadi sub-step 1.1
+    Jika dilakukan lagi untuk step 1, akan menjadi 1.2, 1.3, dst.
+    Jika user mengirim request untuk step 2, akan menjadi sub-step 2.1, 2.2, dst.
+    
+    Request body:
+    - request (required): Input/masukkan dari user untuk sub-step
+    - step (optional, default: 1): Nomor step utama (1-4) yang akan ditambahkan sub-stepnya
     
     Contoh:
-    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step dengan body {{"request": "bagaimana cara membersihkan kolam dengan baik"}}
+    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step dengan body {{"request": "bagaimana cara membersihkan kolam dengan baik", "step": 1}}
       → Menambahkan sub-step 1.1 dengan title dan deskripsi yang di-generate AI
-    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step lagi dengan body {{"request": "cara pasang terpal"}}
+    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step lagi dengan body {{"request": "cara pasang terpal", "step": 1}}
       → Menambahkan sub-step 1.2
+    - PATCH /api/v1/analyze/{id_ringkasan}/roadmap/step dengan body {{"request": "ikan saya mati semua", "step": 2}}
+      → Menambahkan sub-step 2.1
     """
     return await update_roadmap_step(
         db, 
         id_ringkasan, 
         step_request.request,
+        step_request.step,
         current_user.id
     )
 

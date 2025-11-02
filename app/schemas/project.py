@@ -80,6 +80,7 @@ class ProjectUpdateResponse(BaseModel):
 
 class RingkasanAwalDataSimple(BaseModel):
     """Schema untuk data ringkasan awal (tanpa ai_analysis) - untuk GET project"""
+    ringkasanId: str
     skor_kelayakan: int
     potensi_pasar: str  
     estimasi_balik_modal: int
@@ -154,6 +155,7 @@ class AnalyzeResponse(BaseModel):
 class RoadmapStepRequest(BaseModel):
     """Schema untuk request update roadmap step"""
     request: str = Field(..., min_length=5, description="Input/masukkan dari user untuk sub-step")
+    step: int = Field(default=1, ge=1, le=4, description="Nomor step utama yang akan ditambahkan sub-stepnya (1-4)")
 
 class RoadmapStepUpdateResponse(BaseModel):
     """Schema untuk response update roadmap step"""

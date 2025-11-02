@@ -392,6 +392,7 @@ def get_project_by_id(
         )
         
         ringkasan_response_data = RingkasanAwalDataSimple(
+            ringkasanId=ringkasan.id,
             skor_kelayakan=ringkasan.skor_kelayakan,
             potensi_pasar=get_enum_value(ringkasan.potensi_pasar),
             estimasi_balik_modal=ringkasan.estimasi_balik_modal,
